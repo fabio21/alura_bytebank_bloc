@@ -1,21 +1,41 @@
+import 'package:bytebank/components/container.dart';
+import 'package:bytebank/models/name.dart';
 import 'package:bytebank/screens/contacts_list.dart';
+import 'package:bytebank/screens/name.dart';
 import 'package:bytebank/screens/transactions_list.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-class Dashboard extends StatelessWidget {
+class DashboardContainer extends BlocContainer {
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => NameCubit("Fabio"),
+      child: DashboardView(),
+    );
+  }
+}
+
+class DashboardView extends BlocContainer  {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Dashboard'),
+        title: BlocBuilder<NameCubit, String>(builder:(_, state) => Text('Welcome $state')),
       ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.max,
         children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Image.asset('images/bytebank_logo.png'),
+          Expanded(
+            child: Container(
+              alignment: Alignment.topCenter,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Image.asset('images/bytebank_logo.png'),
+              ),
+            ),
           ),
           Container(
             height: 120,
@@ -25,12 +45,23 @@ class Dashboard extends StatelessWidget {
                 _FeatureItem(
                   'Transfer',
                   Icons.monetization_on,
-                  onClick: () => _showContactsList(context),
+                  onClick: () =>  push(context, ContactsListContainer()),
                 ),
                 _FeatureItem(
                   'Transaction Feed',
                   Icons.description,
-                  onClick: () => _showTransactionsList(context),
+                  onClick: () => push(context, TransactionsListContainer()),
+                ),
+                _FeatureItem(
+                  'Change name',
+                  Icons.person_outline,
+                  onClick: () => _showPushWidget(
+                    context,
+                    BlocProvider.value(
+                      value: BlocProvider.of<NameCubit>(context),
+                      child: NameContainer(),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -40,21 +71,16 @@ class Dashboard extends StatelessWidget {
     );
   }
 
-  void _showContactsList(BuildContext context) {
+
+  void _showPushWidget(BuildContext context, Widget widget) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => ContactsList(),
+        builder: (context) => widget,
       ),
     );
   }
 
-  _showTransactionsList(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => TransactionsList(),
-      ),
-    );
-  }
+
 }
 
 class _FeatureItem extends StatelessWidget {
